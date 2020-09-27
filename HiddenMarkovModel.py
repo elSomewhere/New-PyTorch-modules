@@ -298,8 +298,7 @@ class HiddenMarkovModel(torch.distributions.Distribution):
 
     @constraints.dependent_property
     def support(self):
-        # FIXME this may have the wrong shape when support contains batched
-        # parameters
+        #TODO: Supports are dependent on the distributions used to initialize. Possible to pass case-dependent supports?
         return self.support#self._observation_distribution
 
 
@@ -370,7 +369,7 @@ if __name__ == "__main__":
     best_model_idx = np.argmin(loss_curve[-1, :])
     print('Best model is at index %s' % best_model_idx)
 
-    
+
     # Now lets check how well the model was trained
     print("initial_distribution")
     print(initial_distribution.probs)
