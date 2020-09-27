@@ -280,18 +280,48 @@ class HiddenMarkovModel(torch.distributions.Distribution):
             return observations
 
     #TODO
-    def _mean(self):
-        pass
+    @property
+    def mean(self):
+        """
+        Returns the mean of the distribution.
+        """
+        raise NotImplementedError
 
     #TODO
-    def _variance(self):
-        pass
+    @property
+    def variance(self):
+        """
+        Returns the variance of the distribution.
+        """
+        raise NotImplementedError
 
     @constraints.dependent_property
     def support(self):
         #TODO: Supports are dependent on the distributions used to initialize. Possible to pass case-dependent supports?
         return self.support#self._observation_distribution
 
+
+    #TODO
+    def expand(self, batch_shape, _instance=None):
+        """
+        Returns a new distribution instance (or populates an existing instance
+        provided by a derived class) with batch dimensions expanded to
+        `batch_shape`. This method calls :class:`~torch.Tensor.expand` on
+        the distribution's parameters. As such, this does not allocate new
+        memory for the expanded distribution instance. Additionally,
+        this does not repeat any args checking or parameter broadcasting in
+        `__init__.py`, when an instance is first created.
+
+        Args:
+            batch_shape (torch.Size): the desired expanded size.
+            _instance: new instance provided by subclasses that
+                need to override `.expand`.
+
+        Returns:
+            New distribution instance with batch dimensions expanded to
+            `batch_size`.
+        """
+        raise NotImplementedError
 
 if __name__ == "__main__":
     ''' 
