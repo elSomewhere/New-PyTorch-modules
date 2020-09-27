@@ -133,7 +133,6 @@ class HiddenMarkovModel(torch.distributions.Distribution):
       return res
 
     def log_prob(self, value):
-        # value is sequence of observations
         observation_tensor_shape = value.shape
         observation_distribution = self.observation_distribution
         underlying_event_rank = len(observation_distribution.event_shape)
@@ -143,19 +142,12 @@ class HiddenMarkovModel(torch.distributions.Distribution):
         log_init = self._extract_log_probs(num_states,self.initial_distribution)
         log_init = log_init.expand(torch.Size(tuple(torch.cat([torch.tensor(batch_shape), torch.tensor([num_states])], axis=0))))
         log_transition = self._extract_log_probs(num_states, self.transition_distribution)
-        # `observation_event_shape` is the shape of each sequence of observations
-        # emitted by the model.
         observation_event_shape = observation_tensor_shape[-1 - underlying_event_rank:]
         working_obs = value.expand(torch.Size(torch.cat([torch.tensor(batch_shape), torch.tensor(observation_event_shape)], axis=0)))
-        # working_obs :: batch_shape observation_event_shape
         r = underlying_event_rank
-        # Move index into sequence of observations to front so we can apply
         working_obs = self._move_dimension(working_obs, -1 - r, 0)
-        # working_obs :: num_steps batch_shape underlying_event_shape
         working_obs = torch.unsqueeze(working_obs, -1 - r)
-        # working_obs :: num_steps batch_shape 1 underlying_event_shape
         observation_probs = observation_distribution.log_prob(working_obs)
-        # observation_probs :: num_steps batch_shape num_states
         def log_vector_matrix(vs, ms):
             return torch.logsumexp(vs.unsqueeze(-1) + ms, axis=-2)
         fwd_prob = log_init
@@ -195,7 +187,6 @@ class HiddenMarkovModel(torch.distributions.Distribution):
         observation_distribution = self.observation_distribution
         underlying_event_rank = len(observation_distribution.event_shape)
         observation_batch_shape = observation_tensor_shape[:-1 - underlying_event_rank]
-        mask_tensor_shape = torch.shape(mask) if mask is not None else None
         num_states = self.transition_distribution.batch_shape[-1]
         _observation_log_probs = self._observation_log_probs(observations, mask)
         log_init = self._extract_log_probs(num_states, self.initial_distribution)
@@ -288,9 +279,11 @@ class HiddenMarkovModel(torch.distributions.Distribution):
             observations = self._move_dimension(observations, 0, len(batch_shape) + len(sample_shape))
             return observations
 
+    #TODO
     def _mean(self):
         pass
 
+    #TODO
     def _variance(self):
         pass
 
