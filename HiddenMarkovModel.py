@@ -260,7 +260,6 @@ class HiddenMarkovModel(torch.distributions.Distribution):
             possible_observations = self.observation_distribution.sample(
                 torch.Size(torch.cat([self._num_steps.unsqueeze(0), observation_repeat * n]).type(torch.int)))
             inner_shape = self.observation_distribution.event_shape
-            # <tf.Tensor: shape=(3,), dtype=int32, numpy=array([200, 300,   2], dtype=int32)>
             possible_observations = possible_observations.reshape(
                 torch.Size(
                     torch.cat(
@@ -273,7 +272,6 @@ class HiddenMarkovModel(torch.distributions.Distribution):
                     ).type(torch.int)
                 )
             )
-            # <tf.Tensor: shape=(3,), dtype=int32, numpy=array([200, 300,   2], dtype=int32)>
             hidden_one_hot = hidden_one_hot.reshape(
                 torch.Size(
                     torch.cat(
