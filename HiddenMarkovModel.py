@@ -306,8 +306,9 @@ class HiddenMarkovModel(torch.distributions.Distribution):
 if __name__ == "__main__":
     ''' 
     Example:
-    Train a 2-state HMM with 3 possible events with with backpropagation
+    Train a 2-state HMM with 3 discrete events using backpropagation
     '''
+
     # first, lets initialize some random HMM to create samples from
 
     # initial_distribution
@@ -325,20 +326,23 @@ if __name__ == "__main__":
         observation_distribution=observation_distribution,
         num_steps=num_steps
     )
-    #sample 200 instances of random series of length num_steps
+    #sample 300 instances of random series of length num_steps - we will train on these later
     y = sampling_hmm.sample(torch.Size((300,)))
 
-    sampling_hmm.log_prob(value=y)
 
+    # Now lets create a new HMM object, this time with the goal of training it on above subseries.
+    # Optimization of HMMs can be subject to degenerate minima if HMM weights are initialized to symmetric states.
+    # Also, overall optimization may subject to many local minima.
+    # We therefore train 30 parallel HMMs with random initialization,
+    # hereby also taking advantage of pytorch's batch processing capabilities.
+    # We will select the best model at the end of the training loop
 
-    # now lets create a new HMM object, this time with the goal of training it on above subseries
-    # because optmization of HMMs can be subject to many local minima, we will train 10 parallel hmms
     num_repeats = 30
     initial_logits = torch.randn([num_repeats, 1, 2], requires_grad=True)
     transition_logits = torch.randn([num_repeats, 1, 2, 2], requires_grad=True)
     observation_logits = torch.randn([num_repeats, 1, 2, 3], requires_grad=True)
 
-    # define the train loop (note the HMM needs to be re-initialized in every pass to retain the graph
+    # define the train loop
     def train(y):
         trainable_hmm = HiddenMarkovModel(
             initial_distribution=torch.distributions.categorical.Categorical(logits=initial_logits),
@@ -366,7 +370,8 @@ if __name__ == "__main__":
     best_model_idx = np.argmin(loss_curve[-1, :])
     print('Best model is at index %s' % best_model_idx)
 
-    # lets check how well the model was trained
+    
+    # Now lets check how well the model was trained
     print("initial_distribution")
     print(initial_distribution.probs)
     print(current_model.initial_distribution.probs[best_model_idx])
